@@ -30,10 +30,24 @@ async function run() {
 
         // making collections of mongodb
         const db = client.db("matrimony_DB");
-        const userCollection = db.collection("user");
+        const userCollection = db.collection("user"); // for user collection
         // making collections of mongodb
 
 
+        // ? making api for user collection if user is already exist or not and also if not exist then make new user
+
+        app.post('/user:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const user = req.body;
+            //  check if user is already exist or not
+            const isExist = await userCollection.findOne(query);
+            if (isExist) {
+                res.send(isExist)
+            }
+            const result = await userCollection.insertOne(user);
+            res.send(result);
+        })
 
 
 
