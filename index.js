@@ -36,16 +36,16 @@ async function run() {
 
         // ? making api for user collection if user is already exist or not and also if not exist then make new user
 
-        app.post('/user:email', async (req, res) => {
-            const email = req.params.email;
-            const query = { email: email };
+        app.post('/users', async (req, res) => {
+
             const user = req.body;
+            const query = { email: user.email };
             //  check if user is already exist or not
             const isExist = await userCollection.findOne(query);
             if (isExist) {
-                res.send(isExist)
+                return res.send({ message: "user already exist", insertedId: null })
             }
-            const result = await userCollection.insertOne(user);
+            const result = await userCollection.insertOne({ ...user, role: "customer" });
             res.send(result);
         })
 
