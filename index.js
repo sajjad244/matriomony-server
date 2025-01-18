@@ -31,6 +31,7 @@ async function run() {
         // making collections of mongodb
         const db = client.db("matrimony_DB");
         const userCollection = db.collection("user"); // for user collection
+        const bioDataCollection = db.collection("bioData"); // for bio data collection
         // making collections of mongodb
 
 
@@ -51,6 +52,28 @@ async function run() {
 
 
 
+
+        // ? save bioData api in db
+
+        app.post('/bioData', async (req, res) => {
+            const bioData = req.body;
+            // if user added two form get new id every time
+            const lastBioData = await bioDataCollection.findOne({}, { sort: { biodataId: -1 } });
+            const newBioDataId = lastBioData ? lastBioData.biodataId + 1 : 1;
+            const newBioData = { ...bioData, biodataId: newBioDataId };
+            // if user added two form get new id every time
+            const result = await bioDataCollection.insertOne(newBioData);
+            res.send(result);
+        })
+
+        // ? get bioData api from db
+
+        app.get('/bioData', async (req, res) => {
+            const email = req.query.email;  //for specific user
+            const query = { email: email };
+            const result = await bioDataCollection.find(query).toArray();
+            res.send(result);
+        })
 
 
 
