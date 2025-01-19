@@ -66,7 +66,15 @@ async function run() {
             res.send(result);
         })
 
-        // ? get bioData api from db
+
+        // ? get all bioData api from db
+
+        app.get('/bioDataAll', async (req, res) => {
+            const result = await bioDataCollection.find().toArray();
+            res.send(result);
+        })
+
+        // ? get bioData api from db using email
 
         app.get('/bioData', async (req, res) => {
             const email = req.query.email;  //for specific user
@@ -77,7 +85,7 @@ async function run() {
 
         // ? get bioData using id api from db
 
-        app.get('/bioData/:id', async (req, res) => {
+        app.get('/bioDataAll/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: new ObjectId(id) };
             const result = await bioDataCollection.findOne(query);
