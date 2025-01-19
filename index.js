@@ -75,6 +75,15 @@ async function run() {
             res.send(result);
         })
 
+        // ? get bioData using id api from db
+
+        app.get('/bioData/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: new ObjectId(id) };
+            const result = await bioDataCollection.findOne(query);
+            res.send(result);
+        })
+
 
 
 
