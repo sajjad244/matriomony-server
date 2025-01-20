@@ -50,6 +50,13 @@ async function run() {
             res.send(result);
         })
 
+        app.get('/users', async (req, res) => {
+            const result = await userCollection.find().toArray();
+            res.send(result);
+        })
+
+
+        // !------------>>>
 
 
 
@@ -77,7 +84,7 @@ async function run() {
         // ? get bioData api from db using email
 
         app.get('/bioData', async (req, res) => {
-            const email = req.query.email;  //for specific user
+            const email = req.query.email;  //for specific user email
             const query = { email: email };
             const result = await bioDataCollection.find(query).toArray();
             res.send(result);
