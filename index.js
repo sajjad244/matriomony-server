@@ -43,6 +43,25 @@ async function run() {
             res.send({ token });
         })
 
+        // ? middleWare for checking jwt token ----->>
+
+        const verifyToken = (req, res, next) => {
+            console.log("inside verify token function", req.headers.authorization);
+            if (!req.headers.authorization) {
+                return res.status(401).send({ message: "unauthorized access" })
+            }
+            const token = req.headers.authorization.split(' ')[1];
+            jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+                if (err) {
+                    return res.status(403).send({ message: "forbidden access" })
+                }
+                req.decoded = decoded;
+                next();
+
+            })
+
+        }
+
 
 
         //  ! jwt related api
@@ -64,8 +83,7 @@ async function run() {
 
         // ? get all users api from db
 
-        app.get('/users', async (req, res) => {
-            console.log(req.headers);
+        app.get('/users', verifyToken, async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
