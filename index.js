@@ -215,6 +215,16 @@ async function run() {
             res.send(result);
         })
 
+        // ? get favorite api from db using email
+
+        app.get('/favorite/:email', async (req, res) => {
+            const email = req.params.email;  //for specific user email
+            const query = { email: email };
+            const result = await favoriteCollection.find(query).toArray();
+            res.send(result);
+
+        })
+
 
 
 
