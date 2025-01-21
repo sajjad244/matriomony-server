@@ -33,6 +33,7 @@ async function run() {
         const db = client.db("matrimony_DB");
         const userCollection = db.collection("user"); // for user collection
         const bioDataCollection = db.collection("bioData"); // for bio data collection
+        const favoriteCollection = db.collection("favorite"); // for favorite collection
         // making collections of mongodb
 
         //  ! jwt related api
@@ -188,7 +189,7 @@ async function run() {
             res.send(result);
         })
 
-        // ? get bioData using id api from db
+        // ? get bioData using id api from db single data
 
         app.get('/bioDataAll/:id', async (req, res) => {
             const id = req.params.id;
@@ -196,6 +197,16 @@ async function run() {
             const result = await bioDataCollection.findOne(query);
             res.send(result);
         })
+
+        // !----------------- make api for favoriteCollection  ---------------------->>>>
+
+        app.post('/favorite', async (req, res) => {
+            const favorite = req.body;
+            const result = await favoriteCollection.insertOne(favorite);
+            res.send(result);
+        })
+
+
 
 
 
