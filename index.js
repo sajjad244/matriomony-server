@@ -46,7 +46,7 @@ async function run() {
         // ? middleWare for checking jwt token ----->>
 
         const verifyToken = (req, res, next) => {
-            console.log("inside verify token function", req.headers.authorization);
+            // console.log("inside verify token function", req.headers.authorization);
             if (!req.headers.authorization) {
                 return res.status(401).send({ message: "unauthorized access" })
             }
@@ -88,9 +88,44 @@ async function run() {
             res.send(result);
         })
 
+        // ? get single user api using email from db [for role admin checking ]
+
+        app.get('/users/admin/:email', verifyToken, async (req, res) => {
+            const email = req.params.email;
+            // ! for own email checking with own token if anyone check other email then it will not allow
+            if (email !== req.decoded.email) {
+                return res.status(403).send({ message: "forbidden access" })
+            }
+
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === "admin") {
+                isAdmin = true;
+            }
+            res.send({ isAdmin });
+        })
+
+        //? get single user api using email from db [for role premium checking ]
+
+        app.get('/users/premium/:email', async (req, res) => {
+            const email = req.params.email;
+            // ! for own email checking with own token if anyone check other email then it will not allow
+            // if (email !== req.decoded.email) {
+            //     return res.status(403).send({ message: "forbidden access" })
+            // }
+            const query = { email: email };
+            const user = await userCollection.findOne(query);
+            let premium = false;
+            if (user?.role === "premium") {
+                premium = true;
+            }
+            res.send({ premium });
+        })
+
         // ?  for making user admin  {updating role}
 
-        app.patch('/users/admin/:id', async (req, res) => {
+        app.patch('/users/admin/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
@@ -105,7 +140,7 @@ async function run() {
 
         // ?  for making user premium  {updating role}
 
-        app.patch('/users/premium/:id', async (req, res) => {
+        app.patch('/users/premium/:id', verifyToken, async (req, res) => {
             const id = req.params.id;
             const filter = { _id: new ObjectId(id) };
             const options = { upsert: true };
