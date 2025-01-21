@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const app = express();
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const { ObjectId } = require('mongodb');
@@ -34,6 +35,17 @@ async function run() {
         const bioDataCollection = db.collection("bioData"); // for bio data collection
         // making collections of mongodb
 
+        //  ! jwt related api
+
+        app.post('/jwt', (req, res) => {
+            const user = req.body;
+            const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '3h' });
+            res.send({ token });
+        })
+
+
+
+        //  ! jwt related api
 
         // ? making api for user collection if user is already exist or not and also if not exist then make new user
 
@@ -50,8 +62,41 @@ async function run() {
             res.send(result);
         })
 
+        // ? get all users api from db
+
         app.get('/users', async (req, res) => {
+            console.log(req.headers);
             const result = await userCollection.find().toArray();
+            res.send(result);
+        })
+
+        // ?  for making user admin  {updating role}
+
+        app.patch('/users/admin/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    role: "admin"
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
+            res.send(result);
+        })
+
+        // ?  for making user premium  {updating role}
+
+        app.patch('/users/premium/:id', async (req, res) => {
+            const id = req.params.id;
+            const filter = { _id: new ObjectId(id) };
+            const options = { upsert: true };
+            const updateDoc = {
+                $set: {
+                    role: "premium"
+                },
+            };
+            const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send(result);
         })
 
@@ -60,7 +105,7 @@ async function run() {
 
 
 
-        // ? save bioData api in db
+        // ? save bioData api in db and bioDataCollections
 
         app.post('/bioData', async (req, res) => {
             const bioData = req.body;
