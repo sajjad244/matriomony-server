@@ -200,12 +200,20 @@ async function run() {
 
         // !----------------- make api for favoriteCollection  ---------------------->>>>
 
+        // ? save favorite api in db and favoriteCollections
+
         app.post('/favorite', async (req, res) => {
             const favorite = req.body;
             const result = await favoriteCollection.insertOne(favorite);
             res.send(result);
         })
 
+        // ? get all favorite api from db
+
+        app.get('/favoriteAll', async (req, res) => {
+            const result = await favoriteCollection.find().toArray();
+            res.send(result);
+        })
 
 
 
