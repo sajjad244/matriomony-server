@@ -157,30 +157,65 @@ async function run() {
 
 
 
-        // ?  for making user premium  {requested  status update} ---------->>>>
+        // ?  for making user premium  {in database requested status update} ---------->>>>
 
-        // patch req
-
-        app.patch('/users/:email', verifyToken, async (req, res) => {
-            const email = req.params.email;
-            const query = { email: email };
-            const { bioDataId } = req.body; // for bioDataId
-            const user = await userCollection.findOne(query);
-
-            if (!user || user?.status === "Requested") {
-                return res.status(400).send({ message: "You have already requested , please wait for admin approval" })
+        app.post('/users/premium/request', async (req, res) => {
+            try {
+                const bioData = req.body;
+                const newBioData = {
+                    ...bioData,
+                    status: "requested",
+                };
+                const result = await reqPremiumCollection.insertOne(newBioData);
+                res.send(result);
+            } catch (error) {
+                console.error("Error inserting biodata:", error);
+                res.status(500).send({ message: "Please wait for Admin approval your data already sent" });
             }
-            const updateDoc = {
-                $set: {
-                    status: "Requested"
-                    , bioDataId: bioDataId
-                },
-            }
-            const result = await userCollection.updateOne(query, updateDoc);
+        });
+
+        app.get('/all/approved/req', async (req, res) => {
+            const result = await reqPremiumCollection.find().toArray();
             res.send(result);
-
-
         })
+        // path for admin to approve user
+        app.patch('/req/approve', async (req, res) => {
+            try {
+                const { email } = req.body;
+
+                // Validate email
+                if (!email || typeof email !== "string") {
+                    return res.status(400).send({ success: false, message: "Invalid email address provided." });
+                }
+
+                const filter = { email, status: "requested" };
+                const updateDoc = {
+                    $set: { status: "approved" },
+                };
+
+                // Update multiple documents
+                const result = await reqPremiumCollection.updateMany(filter, updateDoc);
+
+                if (result.modifiedCount > 0) {
+                    res.status(200).send({ success: true, message: `${result.modifiedCount} requests approved successfully!` });
+                } else {
+                    res.status(400).send({ success: false, message: "No requests found to approve." });
+                }
+            } catch (error) {
+                console.error("Error approving user:", error);
+                res.status(500).send({ success: false, message: "Internal server error." });
+            }
+        });
+
+
+
+        // ?  for making user premium  {in database requested status update} ---------->>>>
+
+
+
+
+
+
 
 
         // !------------>>>
@@ -199,6 +234,7 @@ async function run() {
             const result = await bioDataCollection.insertOne(newBioData);
             res.send(result);
         })
+
 
 
         // ? get all bioData api from db
