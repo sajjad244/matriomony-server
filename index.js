@@ -34,6 +34,7 @@ async function run() {
         const userCollection = db.collection("user"); // for user collection
         const bioDataCollection = db.collection("bioData"); // for bio data collection
         const favoriteCollection = db.collection("favorite"); // for favorite collection
+        const reqPremiumCollection = db.collection("reqPremium"); // for request premium collection
         // making collections of mongodb
 
         //  ! jwt related api
@@ -84,7 +85,7 @@ async function run() {
 
         // ? get all users api from db
 
-        app.get('/users', verifyToken, async (req, res) => {
+        app.get('/users', async (req, res) => {
             const result = await userCollection.find().toArray();
             res.send(result);
         })
@@ -152,6 +153,33 @@ async function run() {
             };
             const result = await userCollection.updateOne(filter, updateDoc, options);
             res.send(result);
+        })
+
+
+
+        // ?  for making user premium  {requested  status update} ---------->>>>
+
+        // patch req
+
+        app.patch('/users/:email', verifyToken, async (req, res) => {
+            const email = req.params.email;
+            const query = { email: email };
+            const { bioDataId } = req.body; // for bioDataId
+            const user = await userCollection.findOne(query);
+
+            if (!user || user?.status === "Requested") {
+                return res.status(400).send({ message: "You have already requested , please wait for admin approval" })
+            }
+            const updateDoc = {
+                $set: {
+                    status: "Requested"
+                    , bioDataId: bioDataId
+                },
+            }
+            const result = await userCollection.updateOne(query, updateDoc);
+            res.send(result);
+
+
         })
 
 
