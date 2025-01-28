@@ -343,6 +343,23 @@ async function run() {
             }
         });
 
+        // delete 
+
+        app.delete("/payments/:id", async (req, res) => {
+            const { id } = req.params;
+            try {
+                const result = await paymentsCollection.deleteOne({ _id: new ObjectId(id) });
+                if (result.deletedCount > 0) {
+                    res.send({ success: true, message: "Contact request deleted!" });
+                } else {
+                    res.status(404).send({ error: "Contact request not found" });
+                }
+            } catch (error) {
+                res.status(500).send({ error: "Failed to delete contact request" });
+            }
+        });
+
+
 
 
 
