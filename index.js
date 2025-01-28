@@ -315,9 +315,33 @@ async function run() {
         app.post('/payments', async (req, res) => {
             const payment = req.body;
             const result = await paymentsCollection.insertOne(payment);
-            console.log('----->>>', result);
             res.send(result);
         })
+
+        // ? get all payment api from db
+
+        app.get('/payments', async (req, res) => {
+            const result = await paymentsCollection.find().toArray();
+            res.send(result);
+        })
+
+        // ? update payment api from db using id
+        app.patch("/payments/:id", async (req, res) => {
+            const { id } = req.params;
+            try {
+                const result = await paymentsCollection.updateOne(
+                    { _id: new ObjectId(id) },
+                    { $set: { status: "Approved" } }
+                );
+                if (result.modifiedCount > 0) {
+                    res.send({ success: true, message: "Contact request approved!" });
+                } else {
+                    res.status(404).send({ error: "No request found or already approved" });
+                }
+            } catch (error) {
+                res.status(500).send({ error: "Failed to approve request" });
+            }
+        });
 
 
 
