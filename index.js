@@ -3,6 +3,7 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion } = require('mongodb');
 const { ObjectId } = require('mongodb');
@@ -35,6 +36,7 @@ async function run() {
         const bioDataCollection = db.collection("bioData"); // for bio data collection
         const favoriteCollection = db.collection("favorite"); // for favorite collection
         const reqPremiumCollection = db.collection("reqPremium"); // for request premium collection
+        const paymentsCollection = db.collection("payments"); // for request premium collection
         // making collections of mongodb
 
         //  ! jwt related api
@@ -293,6 +295,37 @@ async function run() {
             res.send(result);
         })
 
+
+        // ------payment------->>>>>
+
+        app.post('/create-payment-intent', async (req, res) => {
+            const { price } = req.body;
+            const amount = parseInt(price * 100);
+            const paymentIntent = await stripe.paymentIntents.create({
+                amount: amount,
+                currency: 'usd',
+                payment_method_types: ['card'],
+            })
+
+            res.send({ clientSecret: paymentIntent.client_secret })
+        })
+
+        // api for payment
+
+        app.post('/payments', async (req, res) => {
+            const payment = req.body;
+            const result = await paymentsCollection.insertOne(payment);
+            console.log('----->>>', result);
+            res.send(result);
+        })
+
+
+
+
+
+
+
+        // ------payment------->>>>>
 
 
 
